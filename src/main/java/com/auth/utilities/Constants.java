@@ -27,4 +27,21 @@ public class Constants {
      */
     public static final long TOKEN_VALIDITY = 2 * 60 * 60 * 1000;
 
+    /**
+     * Dirección de correo electrónico utilizada como remitente en los correos electrónicos enviados.
+     * <p>
+     * Este correo electrónico se utiliza como el "from" en los correos enviados a través de la API de SendGrid.
+     * </p>
+     */
+    public static final String FROM_EMAIL = "sdmanager@thinkotb.io";
+
+    /**
+     * Clave API de SendGrid.
+     * <p>
+     * Esta clave se utiliza para autenticar las solicitudes a la API de SendGrid para enviar correos electrónicos.
+     * Es fundamental que este valor se mantenga seguro y no se exponga públicamente.
+     * </p>
+     */
+    public static final String API_KEY = "";
+
 }
