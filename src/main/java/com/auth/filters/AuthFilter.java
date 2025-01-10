@@ -1,14 +1,12 @@
 package com.auth.filters;
 
 import com.auth.utilities.Constants;
-import com.auth.utilities.JwtUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
@@ -23,9 +21,6 @@ import java.io.IOException;
  * </p>
  */
 public class AuthFilter extends GenericFilter {
-
-    @Autowired
-    private JwtUtil jwtUtil;
 
     /**
      * Filtra las solicitudes HTTP para verificar la autenticación mediante un token JWT.
@@ -57,10 +52,15 @@ public class AuthFilter extends GenericFilter {
             if(authHeaderArr.length > 1 && authHeaderArr[1] != null) {
                 String token = authHeaderArr[1];
                 try {
-                    Claims claims = jwtUtil.getClaims(token);
+                    Claims claims = Jwts.parserBuilder().
+                            setSigningKey(Keys.hmacShaKeyFor(Constants.API_SECRET_KEY.getBytes()))
+                            .build()
+                            .parseClaimsJws(token)
+                            .getBody();
                     httpServletRequest.setAttribute("userId", Integer.parseInt(claims.get("userId").toString()));
 
                 } catch (Exception e){
+                    e.printStackTrace();
                     httpServletResponse.sendError(HttpStatus.UNAUTHORIZED.value(), "invalid/expired token");
                 }
             } else {
