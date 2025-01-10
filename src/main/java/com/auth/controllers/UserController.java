@@ -106,4 +106,28 @@ public class UserController {
         return new ResponseEntity<>(Map.of("message", response), HttpStatus.OK);
     }
 
+    /**
+     * Endpoint para validar el correo electrónico de un usuario.
+     *
+     * Este método maneja una solicitud HTTP GET para validar el correo electrónico
+     * de un usuario registrado. Utiliza un token enviado como parámetro de consulta
+     * para activar la cuenta del usuario.
+     *
+     * @param token El token de validación proporcionado al usuario.
+     * @return Una respuesta HTTP con un mensaje indicando el resultado de la validación:
+     *         - <code>200 OK</code> si el token es válido y la cuenta se activa correctamente.
+     *         - <code>400 BAD REQUEST</code> si el token es inválido o ha expirado.
+     */
+    @GetMapping("/validate")
+    public ResponseEntity<Map<String, String>> validateUser(@RequestParam String token) {
+        try {
+            // Activar la cuenta del usuario
+            userService.activateUser(token);
+
+            return new ResponseEntity<>(Map.of("message", "Correo validado exitosamente"), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(Map.of("message", "Token inválido o expirado"), HttpStatus.BAD_REQUEST);
+        }
+    }
+
 }

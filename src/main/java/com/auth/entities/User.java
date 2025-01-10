@@ -50,6 +50,33 @@ public class User {
     private String password;
 
     /**
+     * Estado del usuario.
+     * <p>
+     * Este campo indica si el usuario está activo o inactivo en el sistema.
+     * </p>
+     */
+    @Column(name = "active")
+    private Boolean active;
+
+    /**
+     * Obtiene el estado del usuario.
+     *
+     * @return El estado del usuario.
+     */
+    public Boolean getActive() {
+        return active;
+    }
+
+    /**
+     * Establece el estado del usuario.
+     *
+     * @param active Estado del usuario.
+     */
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
+    /**
      * Constructor con parámetros.
      *
      * @param id       Identificador único del usuario.
@@ -57,11 +84,12 @@ public class User {
      * @param email    Correo electrónico del usuario.
      * @param password Contraseña encriptada del usuario.
      */
-    public User(Integer id, String name, String email, String password) {
+    public User(Integer id, String name, String email, String password, Boolean active) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.password = password;
+        this.active = active;
     }
 
     /**
