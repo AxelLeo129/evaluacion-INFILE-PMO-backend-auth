@@ -3,6 +3,8 @@ package com.auth.services;
 import com.auth.entities.User;
 import com.auth.exceptions.AuthException;
 
+import java.util.Map;
+
 /**
  * Servicio para manejar operaciones relacionadas con usuarios.
  * <p>
@@ -40,6 +42,40 @@ public interface UserService {
      * @return Un mensaje de confirmación indicando que el registro fue exitoso.
      * @throws AuthException Si el correo electrónico ya está en uso o ocurre un error durante el registro.
      */
-    String registerUser(String name, String email, String password) throws AuthException;
+    String registerUser(String name, String email, String password, String repeatPassword) throws AuthException;
+
+    /**
+     * Solicita la recuperación de contraseña para un usuario.
+     * <p>
+     * Este método envía un correo electrónico al usuario con un enlace o instrucciones
+     * para recuperar su contraseña. Si el correo no está registrado o ocurre un error,
+     * lanza una excepción {@link AuthException}.
+     * </p>
+     *
+     * @param email El correo electrónico del usuario.
+     * @return Un código de estado HTTP:
+     *         <ul>
+     *             <li><code>202</code>: El correo fue enviado exitosamente.</li>
+     *             <li><code>500</code>: Error al enviar el correo.</li>
+     *         </ul>
+     * @throws AuthException Si el correo no está registrado o ocurre un error durante el envío.
+     */
+    Integer recoveryPassword(String email) throws AuthException;
+
+    /**
+     * Restablece la contraseña de un usuario.
+     * <p>
+     * Este método valida las contraseñas proporcionadas y utiliza la información del token
+     * de autenticación en los encabezados para identificar al usuario. Si las contraseñas no coinciden
+     * o ocurre un error, lanza una excepción {@link AuthException}.
+     * </p>
+     *
+     * @param headers        Encabezados de la solicitud que contienen el token de autenticación.
+     * @param password       La nueva contraseña del usuario.
+     * @param repeatPassword La confirmación de la nueva contraseña.
+     * @return Un mensaje indicando si el restablecimiento fue exitoso.
+     * @throws AuthException Si las contraseñas no coinciden o ocurre un error durante el restablecimiento.
+     */
+    String resetPassword(Map<String, String> headers, String password, String repeatPassword) throws AuthException;
 
 }

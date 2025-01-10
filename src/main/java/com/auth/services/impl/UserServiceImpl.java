@@ -3,8 +3,11 @@ package com.auth.services.impl;
 import com.auth.entities.User;
 import com.auth.exceptions.AuthException;
 import com.auth.repositories.UserRepository;
+import com.auth.services.EmailService;
 import com.auth.services.UserService;
 import com.auth.utilities.Constants;
+import com.auth.utilities.JwtUtil;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.mindrot.jbcrypt.BCrypt;
@@ -29,6 +32,12 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private EmailService emailService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @Override
     public String login(String email, String password) throws AuthException {
         try {
@@ -42,8 +51,39 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String registerUser(String name, String email, String password) throws AuthException {
+    public Integer recoveryPassword(String email) throws AuthException {
         try {
+            Optional<User> user = userRepository.findByEmail(email);
+            if(user.isEmpty()) throw new AuthException("User not found");
+            return emailService.sendEmail(user.get().getEmail(), "Recuperar contraseña", Map.of("token-url", generateJWTToken(user.get())), "d-de5644eda1304a59ac2a5772b500264c");
+        } catch (Exception e) {
+            throw new AuthException(e.getMessage());
+        }
+    }
+
+    @Override
+    public String resetPassword(Map<String, String> headers, String password, String repeatPassword) throws AuthException {
+        try {
+            if(!password.equals(repeatPassword)) throw new AuthException("The passwords must match");
+            String auth = headers.get("authorization");
+            String token = auth.replace("Bearer ", "");
+            Claims claims = jwtUtil.getClaims(token);
+            Integer userId = Integer.parseInt(claims.get("userId").toString());
+            Optional<User> user = userRepository.findById(userId);
+            if(user.isEmpty()) throw new AuthException("User not found");
+            String hashPassword = BCrypt.hashpw(password, BCrypt.gensalt(10));
+            user.get().setPassword(hashPassword);
+            userRepository.save(user.get());
+            return "Password updated";
+        } catch (Exception e) {
+            throw new AuthException(e.getMessage());
+        }
+    }
+
+    @Override
+    public String registerUser(String name, String email, String password, String repeatPassword) throws AuthException {
+        try {
+            if(!password.equals(repeatPassword)) throw new AuthException("The passwords must match");
             String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(10));
             Pattern pattern = Pattern.compile("^(.+)@(.+)$");
             if(email != null) email = email.toLowerCase();
