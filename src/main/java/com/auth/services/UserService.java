@@ -78,4 +78,16 @@ public interface UserService {
      */
     String resetPassword(Map<String, String> headers, String password, String repeatPassword) throws AuthException;
 
+    /**
+     * Activa un usuario en el sistema.
+     * <p>
+     * Este método activa un usuario en el sistema utilizando el token de activación proporcionado.
+     * Si el token es inválido o ha expirado, lanza una excepción {@link AuthException}.
+     * </p>
+     *
+     * @param token El token de activación del usuario.
+     * @throws AuthException Si el token es inválido o ha expirado.
+     */
+    void activateUser(String token) throws AuthException;
+
 }

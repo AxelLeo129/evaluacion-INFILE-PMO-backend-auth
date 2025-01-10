@@ -12,6 +12,7 @@ import com.sendgrid.helpers.mail.objects.Personalization;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -26,7 +27,10 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public Integer sendEmail(String email, String subject, Map<String, Object> dynamicContent, String templateId) throws Exception {
-        dynamicContent.put("subject", subject); // Agregar el asunto al contenido dinámico
+
+        Map<String, Object> mutableContent = new HashMap<>(dynamicContent);
+
+        mutableContent.put("subject", subject); // Agregar el asunto al contenido dinámico
 
         // Crear el correo
         Mail mail = new Mail();
@@ -36,7 +40,7 @@ public class EmailServiceImpl implements EmailService {
         // Configurar destinatario y contenido dinámico
         Personalization personalization = new Personalization();
         personalization.addTo(new Email(email));
-        dynamicContent.forEach(personalization::addDynamicTemplateData);
+        mutableContent.forEach(personalization::addDynamicTemplateData);
         mail.addPersonalization(personalization);
 
         // Enviar correo mediante SendGrid

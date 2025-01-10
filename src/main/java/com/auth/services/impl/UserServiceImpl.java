@@ -44,6 +44,7 @@ public class UserServiceImpl implements UserService {
         try {
             Optional<User> user = userRepository.findByEmail(email);
             if(user.isEmpty()) throw new AuthException("User not found");
+            if(!user.get().getActive()) throw new AuthException("Verify email");
             if(!BCrypt.checkpw(password, user.get().getPassword())) throw new AuthException("Invalid password");
             return generateJWTToken(user.get());
         } catch (Exception e) {
@@ -82,6 +83,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void activateUser(String token) throws AuthException {
+        Claims claims = jwtUtil.getClaims(token);
+        String email = claims.getSubject();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AuthException("Usuario no encontrado"));
+
+        user.setActive(true); // Asegúrate de tener este campo en la entidad
+        userRepository.save(user);
+    }
+
+    @Override
     public String registerUser(String name, String email, String password, String repeatPassword) throws AuthException {
         try {
             if(!password.equals(repeatPassword)) throw new AuthException("The passwords must match");
@@ -94,9 +106,18 @@ public class UserServiceImpl implements UserService {
             user.setEmail(email);
             user.setName(name);
             user.setPassword(hashedPassword);
+            user.setActive(false);
             userRepository.save(user);
+            String validationToken = generateValidationToken(email);
+            emailService.sendEmail(
+                    email,
+                    "Valida tu correo electrónico",
+                    Map.of("name", name, "validationLink", "http://localhost:8081/api/users/validate?token=" + validationToken),
+                    "d-27829d4e505c4fd79e8ed65ffaddd6c6"
+            );
             return "Registered successfully";
         } catch (Exception e) {
+            e.printStackTrace();
             throw new AuthException(e.getMessage());
         }
     }
@@ -120,6 +141,25 @@ public class UserServiceImpl implements UserService {
                 .claim("userId", user.getId())
                 .claim("email", user.getEmail())
                 .claim("name", user.getName())
+                .compact();
+    }
+
+    /**
+     * Genera un token JWT para validar el correo electrónico de un usuario.
+     * <p>
+     * El token contiene el correo electrónico del usuario y una fecha de expiración.
+     * </p>
+     *
+     * @param email El correo electrónico del usuario.
+     * @return Un token JWT firmado con la clave secreta de la aplicación.
+     */
+    public String generateValidationToken(String email) {
+        long timestamp = System.currentTimeMillis();
+        return Jwts.builder()
+                .setSubject(email)
+                .setIssuedAt(new Date(timestamp))
+                .setExpiration(new Date(timestamp + Constants.TOKEN_VALIDITY)) // Validez del token
+                .signWith(Keys.hmacShaKeyFor(Constants.API_SECRET_KEY.getBytes()))
                 .compact();
     }
 
