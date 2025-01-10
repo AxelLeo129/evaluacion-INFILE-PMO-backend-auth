@@ -35,7 +35,7 @@ public class EvaluacionInfilePmoBackendAuthApplication {
 		FilterRegistrationBean<AuthFilter> registrationBean = new FilterRegistrationBean<>();
 		AuthFilter authFilter = new AuthFilter();
 		registrationBean.setFilter(authFilter);
-		registrationBean.addUrlPatterns("/api/categories/*");
+		registrationBean.addUrlPatterns("/api/test/*");
 		return registrationBean;
 	}
 

@@ -10,6 +10,7 @@ import com.auth.utilities.JwtUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -112,7 +113,8 @@ public class UserServiceImpl implements UserService {
      */
     private String generateJWTToken(User user) {
         long timestamp = System.currentTimeMillis();
-        return Jwts.builder().signWith(SignatureAlgorithm.HS256, Constants.API_SECRET_KEY)
+        return Jwts.builder()
+                .signWith(Keys.hmacShaKeyFor(Constants.API_SECRET_KEY.getBytes()), SignatureAlgorithm.HS256)
                 .setIssuedAt(new Date(timestamp))
                 .setExpiration(new Date(timestamp + Constants.TOKEN_VALIDITY))
                 .claim("userId", user.getId())
